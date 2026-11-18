@@ -2,10 +2,11 @@
 # the-gist council: ask models from other providers to challenge and rank options.
 # Usage: council.sh --host <claude|codex|gemini|cursor|opencode|qwen> --brief FILE
 #                   [--voices N] [--timeout SEC] [--log-dir DIR] [--dry-run]
+#        council.sh --self-test --host <agent>   (sample council: which real voices work here?)
 # Portable: bash 3.2+ (macOS default), no required deps beyond curl for OpenRouter.
 set -u
 
-VERSION="0.1.0"
+VERSION="0.2.0"
 
 # ---------- defaults (override in ~/.the-gist/config, a sourced shell file) ----------
 THE_GIST_VOICES="${THE_GIST_VOICES:-3}"
@@ -20,6 +21,8 @@ CONFIG_FILE="${THE_GIST_CONFIG:-$HOME/.the-gist/config}"
 HOST=""
 BRIEF=""
 DRY_RUN=0
+SELF_TEST=0
+TIMEOUT_GIVEN=0
 VOICES="$THE_GIST_VOICES"
 TIMEOUT="$THE_GIST_TIMEOUT"
 LOG_DIR="$THE_GIST_LOG_DIR"
@@ -31,11 +34,12 @@ while [ $# -gt 0 ]; do
     --host) HOST="${2:-}"; shift 2 ;;
     --brief) BRIEF="${2:-}"; shift 2 ;;
     --voices) VOICES="${2:-}"; shift 2 ;;
-    --timeout) TIMEOUT="${2:-}"; shift 2 ;;
+    --timeout) TIMEOUT="${2:-}"; TIMEOUT_GIVEN=1; shift 2 ;;
     --log-dir) LOG_DIR="${2:-}"; shift 2 ;;
     --dry-run) DRY_RUN=1; shift ;;
+    --self-test) SELF_TEST=1; shift ;;
     --version) echo "$VERSION"; exit 0 ;;
-    -h|--help) sed -n '2,5p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,6p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown argument: $1" ;;
   esac
 done
@@ -78,7 +82,17 @@ provider_of_cli() {
 HOST_PROVIDER="$(provider_of_host "$HOST")"
 
 # ---------- brief ----------
-if [ -z "$BRIEF" ]; then
+if [ "$SELF_TEST" -eq 1 ]; then
+  [ "$TIMEOUT_GIVEN" -eq 1 ] || TIMEOUT=60
+  LOG_DIR="$(mktemp -d 2>/dev/null || mktemp -d -t thegist-test)"
+  BRIEF_TEXT="QUESTION: Where should a small web app keep its runtime configuration? (the-gist self-test)
+CONTEXT: Node.js API, 2 developers, deployed on one VPS plus a staging copy. About 15 settings, 3 of them secrets. Settings change about once a month.
+OPTIONS:
+1. .env files per environment
+2. A YAML config file committed to the repo, secrets in .env
+3. A settings table in the database with an admin page
+YOUR CURRENT PICK: 2"
+elif [ -z "$BRIEF" ]; then
   [ -t 0 ] && die "--brief FILE is required (or pipe the brief on stdin)"
   BRIEF_TEXT="$(cat)"
 else
@@ -231,9 +245,9 @@ while IFS='|' read -r kind id prov; do
   i=$((i + 1))
   echo "$kind|$id|$prov" > "$TMP/$i.meta"
   if [ "$kind" = "cli" ]; then
-    ( call_cli "$id" < /dev/null > "$TMP/$i.out" 2> "$TMP/$i.err"; echo $? > "$TMP/$i.rc" ) &
+    ( t0=$(date +%s); call_cli "$id" < /dev/null > "$TMP/$i.out" 2> "$TMP/$i.err"; echo $? > "$TMP/$i.rc"; echo $(( $(date +%s) - t0 )) > "$TMP/$i.secs" ) &
   else
-    ( call_openrouter "$id" < /dev/null > "$TMP/$i.out" 2> "$TMP/$i.err"; echo $? > "$TMP/$i.rc" ) &
+    ( t0=$(date +%s); call_openrouter "$id" < /dev/null > "$TMP/$i.out" 2> "$TMP/$i.err"; echo $? > "$TMP/$i.rc"; echo $(( $(date +%s) - t0 )) > "$TMP/$i.secs" ) &
   fi
 done < "$TMP/voices"
 wait
@@ -253,6 +267,8 @@ field() {  # field NAME FILE -> value of first "NAME:" line, case-insensitive, m
 
 o=1; while [ "$o" -le "$N_OPTIONS" ]; do eval "PTS_$o=0"; o=$((o + 1)); done
 REAL=0
+TIMED_OUT=""
+FAILED=""
 REPORT=""
 TOP_VOTES=""
 
@@ -261,6 +277,7 @@ while [ "$j" -le "$TOTAL" ]; do
   IFS='|' read -r kind id prov < "$TMP/$j.meta"
   label="$id"; [ "$kind" = "openrouter" ] && label="openrouter:$id"
   rc="$(cat "$TMP/$j.rc" 2>/dev/null || echo 1)"
+  secs="$(cat "$TMP/$j.secs" 2>/dev/null || echo "?")"
   rank_raw="$(field RANK "$TMP/$j.out")"
   why="$(field WHY "$TMP/$j.out")"
   new="$(field NEW "$TMP/$j.out")"
@@ -281,12 +298,12 @@ while [ "$j" -le "$TOTAL" ]; do
     done
     top="${ranks%% *}"
     TOP_VOTES="$TOP_VOTES $label=$top"
-    line="VOICE $label ($prov) | RANK: $(echo "$ranks" | tr ' ' ',') | WHY: ${why:-?} | NEW: ${new:-none}"
+    line="VOICE $label ($prov) | ${secs}s | RANK: $(echo "$ranks" | tr ' ' ',') | WHY: ${why:-?} | NEW: ${new:-none}"
   else
-    if [ "$rc" = "124" ] || [ "$rc" = "143" ]; then err="timeout after ${TIMEOUT}s"
-    else err="no valid RANK line (exit $rc): $(cat "$TMP/$j.err" "$TMP/$j.out" 2>/dev/null | head -c 160 | tr '\n' ' ')"
+    if [ "$rc" = "124" ] || [ "$rc" = "143" ]; then err="timeout after ${TIMEOUT}s"; TIMED_OUT="$TIMED_OUT $label"
+    else FAILED="$FAILED $label"; err="no valid RANK line (exit $rc): $(cat "$TMP/$j.err" "$TMP/$j.out" 2>/dev/null | head -c 160 | tr '\n' ' ')"
     fi
-    line="VOICE $label ($prov) | ERROR: $err"
+    line="VOICE $label ($prov) | ${secs}s | ERROR: $err"
   fi
   REPORT="$REPORT$line
 "
@@ -339,4 +356,30 @@ echo "TALLY: $TALLY"
 echo "REAL_VOICES: $REAL/$VOICES"
 [ "$SIM_NEEDED" -gt 0 ] && echo "SIMULATED_NEEDED: $SIM_NEEDED"
 echo "LOG: $LOG"
+
+# ---------- self-test diagnosis ----------
+if [ "$SELF_TEST" -eq 1 ]; then
+  missing=""
+  for cli in $THE_GIST_CLI_ORDER; do
+    prov="$(provider_of_cli "$cli")"
+    [ "$prov" = "$HOST_PROVIDER" ] && continue
+    command -v "$cli" >/dev/null 2>&1 || missing="$missing $cli"
+  done
+  missing="${missing# }"
+  echo "MISSING_CLI: ${missing:-none}"
+  if [ -n "${OPENROUTER_API_KEY:-}" ]; then echo "OPENROUTER: key set"; else echo "OPENROUTER: not set"; fi
+  if [ "$REAL" -ge "$VOICES" ]; then verdict="OK"
+  elif [ "$REAL" -gt 0 ]; then verdict="PARTIAL"
+  else verdict="NONE"
+  fi
+  echo "VERDICT: $verdict ($REAL/$VOICES real)"
+  if [ "$verdict" = "OK" ]; then fix="none"
+  elif [ -n "$TIMED_OUT" ]; then fix="raise the timeout (e.g. THE_GIST_TIMEOUT=180 in ~/.the-gist/config); timed out:$TIMED_OUT"
+  elif [ -n "$FAILED" ]; then fix="run each failing CLI once by hand to log in or fix it:$FAILED"
+  elif [ -n "$missing" ] && [ -z "${OPENROUTER_API_KEY:-}" ]; then fix="install another provider's CLI (${missing// /, }), or export OPENROUTER_API_KEY=... to fill every seat"
+  elif [ -z "${OPENROUTER_API_KEY:-}" ]; then fix="export OPENROUTER_API_KEY=... to fill the remaining seats"
+  else fix="add more providers to THE_GIST_OPENROUTER_MODELS in ~/.the-gist/config"
+  fi
+  echo "FIX: $fix"
+fi
 exit 0

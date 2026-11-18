@@ -48,6 +48,7 @@ npx skills add lpbaril/the-gist
 | `/the-gist on --project` | On for this repo only (writes `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `.cursor/rules/`). |
 | `/the-gist off` | Back to normal replies. |
 | `/the-gist status` | Shows where it's on. |
+| `/the-gist test` | Runs a sample council (≤60 s) and shows which real voices work in your setup, with the one fix to apply. |
 | `1`, `2`, … | Pick an option. `ok` = take the recommendation. |
 | `A1 B2` | Answer several decisions in one message. |
 | `?` | Full explanation of the last reply. |
@@ -73,9 +74,11 @@ The council uses whatever is available, in this order:
 
 Example: in Claude Code with `codex` and `gemini` installed plus an OpenRouter key, the council is GPT (codex) + Gemini + Grok (OpenRouter).
 
-Check what would run:
-```bash
-bash ~/.claude/skills/the-gist/scripts/council.sh --host claude --brief brief.md --dry-run
+Check your setup: type `/the-gist test`.
+```
+✅ Council test — 2/3 real voices
+codex ✓ 12s · gemini ✓ 8s · openrouter ✗ no key
+Fix: export OPENROUTER_API_KEY=… for a 3rd voice
 ```
 
 Tune voices, timeout and models: copy [`config.example`](config.example) to `~/.the-gist/config`.

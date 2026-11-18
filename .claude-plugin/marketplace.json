@@ -6,7 +6,7 @@
       "name": "the-gist",
       "source": "./",
       "description": "Gist mode: tiny replies, one-digit decisions, multi-provider council before asking you.",
-      "version": "0.1.0"
+      "version": "0.2.0"
     }
   ]
 }

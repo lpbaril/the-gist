@@ -62,6 +62,23 @@ B. Deploy target?
 Council 3/3 → A1, 3/3 → B1 · reply e.g. `A1 B1` · ? for more
 ```
 
+## Council test (`/the-gist test`)
+
+Build it from the script's VOICE, OPENROUTER, VERDICT and FIX lines. One entry per voice: ✓ with seconds, or ✗ with a 1–3 word cause. Add `openrouter ✗ no key` when the key is not set. Drop the `Fix:` line when FIX is none.
+
+VERDICT OK or PARTIAL:
+```
+✅ Council test — 2/3 real voices
+codex ✓ 12s · gemini ✓ 8s · openrouter ✗ no key
+Fix: export OPENROUTER_API_KEY=… for a 3rd voice
+```
+
+VERDICT NONE:
+```
+⛔ Council test — 0/3 real voices
+Fix: install `codex` or `gemini` CLI, or export OPENROUTER_API_KEY=…
+```
+
 ## ⛔ Blocked
 
 ```

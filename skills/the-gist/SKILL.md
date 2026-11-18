@@ -1,9 +1,9 @@
 ---
 name: the-gist
-description: Gist mode for busy humans running many coding agents. Replies shrink to the essentials, decisions arrive as ranked numbered options (answer with "1"), and important decisions are first debated by a council of models from other providers. Use when the user types "/the-gist on", "/the-gist off", "/the-gist status" (or "$the-gist ..."), says "gist mode" / "normal mode", or when the agent's instruction file (CLAUDE.md, AGENTS.md, GEMINI.md, Cursor rules) contains a "the-gist:on" block — in that case apply these rules to EVERY reply.
+description: Gist mode for busy humans running many coding agents. Replies shrink to the essentials, decisions arrive as ranked numbered options (answer with "1"), and important decisions are first debated by a council of models from other providers. Use when the user types "/the-gist on", "/the-gist off", "/the-gist status", "/the-gist test" (or "$the-gist ..."), says "gist mode" / "normal mode", or when the agent's instruction file (CLAUDE.md, AGENTS.md, GEMINI.md, Cursor rules) contains a "the-gist:on" block — in that case apply these rules to EVERY reply.
 license: MIT
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   author: lpbaril
   repo: https://github.com/lpbaril/the-gist
 ---
@@ -22,6 +22,7 @@ The reader runs many agents at once. Every word you send costs their attention, 
 | `/the-gist on --project` | Same, but only for this repo: `toggle.sh on --project`. |
 | `/the-gist off`, "normal mode" | Run `toggle.sh off` (add `--project` if it was on per project). Reply one line, then return to your normal style. |
 | `/the-gist status` | Run `toggle.sh status`, reply with its one-line output. |
+| `/the-gist test` | Run `bash SKILL_DIR/scripts/council.sh --self-test --host <your-agent>` (takes up to 60 s). Reply with the "Council test" template in `SKILL_DIR/references/formats.md`. |
 
 Codex uses `$the-gist on`. If the script cannot run (no shell), apply the rules for this session anyway and say `Gist mode on (this session only)`.
 
