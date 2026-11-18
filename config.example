@@ -1,0 +1,17 @@
+# the-gist council config. Copy to ~/.the-gist/config (it is sourced by council.sh).
+# Never put API keys here; export OPENROUTER_API_KEY in your shell profile instead.
+
+# Number of council voices (models from providers other than the host agent).
+THE_GIST_VOICES=3
+
+# Seconds to wait for each voice.
+THE_GIST_TIMEOUT=180
+
+# Local agent CLIs to try first, in order. One voice per provider; the host's own provider is skipped.
+THE_GIST_CLI_ORDER="codex gemini claude cursor-agent opencode qwen"
+
+# OpenRouter fallback models (space-separated, "provider/model"). Check current IDs at https://openrouter.ai/models
+THE_GIST_OPENROUTER_MODELS="openai/gpt-5 google/gemini-2.5-pro x-ai/grok-4 deepseek/deepseek-chat"
+
+# Where council logs are written (relative to the project).
+THE_GIST_LOG_DIR=".the-gist/decisions"

@@ -1,0 +1,3 @@
+.the-gist/
+*.the-gist.tmp
+.DS_Store

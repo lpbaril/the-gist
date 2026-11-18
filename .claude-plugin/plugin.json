@@ -1,0 +1,10 @@
+{
+  "name": "the-gist",
+  "version": "0.1.0",
+  "description": "Gist mode: tiny replies, one-digit decisions, multi-provider council before asking you.",
+  "author": { "name": "lpbaril", "url": "https://github.com/lpbaril" },
+  "homepage": "https://github.com/lpbaril/the-gist",
+  "repository": "https://github.com/lpbaril/the-gist",
+  "license": "MIT",
+  "keywords": ["concise", "brevity", "decisions", "council", "multi-model", "productivity"]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "the-gist",
+  "owner": { "name": "lpbaril", "url": "https://github.com/lpbaril" },
+  "plugins": [
+    {
+      "name": "the-gist",
+      "source": "./",
+      "description": "Gist mode: tiny replies, one-digit decisions, multi-provider council before asking you.",
+      "version": "0.1.0"
+    }
+  ]
+}
