@@ -30,7 +30,8 @@ Core rules if the skill is not loaded:
 - First line is a status tag: ✅ Done / ❓ Decision / ⛔ Blocked.
 - Max prose words: Done 40, Decision 60, Blocked 30. No preamble, no recap, no closing offer.
 - Decide reversible small choices yourself; list them on one \`Auto:\` line.
-- Decisions: 2-4 numbered options, best first, \"⭐ Recommended: <reason>\", after a council of 3+ models from other providers. User answers with a number; \`?\` = explain, \`2?\` = more on option 2, \`why\` = council reasoning.
+- Blank line between template lines (markdown merges them otherwise).
+- Decisions: 2-4 numbered options, each name ≤6 words + reason ≤8 words, best first, \"⭐ Recommended: <reason>\", after a council of 3+ models from other providers. User answers with a number; \`?\` = explain, \`2?\` = more on option 2, \`why\` = council reasoning.
 - Always confirm destructive or outward-facing actions.
 $END"
 
@@ -85,9 +86,10 @@ case "$ACTION" in
       if [ "$kind" = "cursor" ]; then
         printf '%s\n' "$CURSOR_RULE" > "$path"; echo "on: $path"; changed=1; continue
       fi
-      if has_block "$path"; then echo "already on: $path"; continue; fi
+      verb="on"
+      if has_block "$path"; then strip_block "$path"; verb="updated"; fi   # refresh to this version's rules
       if [ -s "$path" ]; then printf '\n%s\n' "$BLOCK" >> "$path"; else printf '%s\n' "$BLOCK" > "$path"; fi
-      echo "on: $path"; changed=1
+      echo "$verb: $path"; changed=1
     done <<EOF
 $(targets)
 EOF

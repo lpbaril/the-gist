@@ -6,7 +6,7 @@
 # Portable: bash 3.2+ (macOS default), no required deps beyond curl for OpenRouter.
 set -u
 
-VERSION="0.2.0"
+VERSION="0.2.1"
 
 # ---------- defaults (override in ~/.the-gist/config, a sourced shell file) ----------
 THE_GIST_VOICES="${THE_GIST_VOICES:-3}"

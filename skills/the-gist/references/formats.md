@@ -1,19 +1,22 @@
 # the-gist — reply formats
 
-Copy these shapes exactly. Prose word limits: Done 40, Decision 60 (+25 per extra decision in a batch), Blocked 30. Code, paths, commands and numbers don't count.
+Copy these shapes exactly, including the blank lines: chat apps render markdown, and markdown merges lines that have no blank line between them. Numbered options are a list and stay together. Prose word limits: Done 40, Decision 60 (+25 per extra decision in a batch), Blocked 30. Code, paths, commands and numbers don't count. Each option: name ≤6 words, reason ≤8 words.
 
 ## ✅ Done
 
 Good:
 ```
 ✅ Done — magic-link login works; 14/14 auth tests pass.
+
 Check: `npm run dev` → http://localhost:3000/login
+
 Auto: Resend for email (already in deps), 15-min link expiry (reversible)
 ```
 
 Good, with an issue:
 ```
 ✅ Done, 1 issue — CSV export works; files over 50 MB time out on Vercel (10 s limit).
+
 Check: `npm test -- export`
 ```
 
@@ -29,17 +32,21 @@ you'd like me to make any changes!
 Good:
 ```
 ❓ Where should user uploads be stored?
+
 1. Cloudflare R2 — ⭐ Recommended: no egress fees, S3 API
 2. AWS S3 — 2nd: team already knows it
 3. Postgres bytea — 3rd: simplest, breaks past ~1 GB
+
 Council 3/3 → 1 · reply 1–3 · ? for more
 ```
 
 Split council:
 ```
 ❓ Rewrite the billing module or patch it?
+
 1. Patch now, rewrite in Q3 — ⭐ Recommended: ships this week
 2. Rewrite now — 2nd: removes 3 known bugs at once
+
 Council 2/3 → 1 (gemini: 2) · reply 1–2 · ? for more
 ```
 
@@ -53,12 +60,14 @@ Council 2 real + 1 simulated → 1 · reply 1–3 · ? for more
 Decisions get letters, options get numbers. One message, never one per turn.
 ```
 ❓ 2 decisions
+
 A. Auth provider?
    1. Clerk — ⭐ Recommended: fastest, prebuilt UI
    2. Auth.js — 2nd: free, more code
 B. Deploy target?
    1. Vercel — ⭐ Recommended: zero config for Next.js
    2. Fly.io — 2nd: cheaper at scale
+
 Council 3/3 → A1, 3/3 → B1 · reply e.g. `A1 B1` · ? for more
 ```
 
@@ -69,13 +78,16 @@ Build it from the script's VOICE, OPENROUTER, VERDICT and FIX lines. One entry p
 VERDICT OK or PARTIAL:
 ```
 ✅ Council test — 2/3 real voices
+
 codex ✓ 12s · gemini ✓ 8s · openrouter ✗ no key
+
 Fix: export OPENROUTER_API_KEY=… for a 3rd voice
 ```
 
 VERDICT NONE:
 ```
 ⛔ Council test — 0/3 real voices
+
 Fix: install `codex` or `gemini` CLI, or export OPENROUTER_API_KEY=…
 ```
 
@@ -83,6 +95,7 @@ Fix: install `codex` or `gemini` CLI, or export OPENROUTER_API_KEY=…
 
 ```
 ⛔ Blocked — Stripe test key missing; checkout tests can't run.
+
 Need: STRIPE_SECRET_KEY (test mode) in .env.local
 ```
 
@@ -104,5 +117,6 @@ Council on "Where should user uploads be stored?"
 - gemini: 1 — S3-compatible, easy to migrate away
 - openrouter/grok: 2 — team familiarity reduces risk
 - me (claude): 1
+
 Log: .the-gist/decisions/20261118-142233-user-uploads.md
 ```

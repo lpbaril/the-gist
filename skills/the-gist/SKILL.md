@@ -3,7 +3,7 @@ name: the-gist
 description: Gist mode for busy humans running many coding agents. Replies shrink to the essentials, decisions arrive as ranked numbered options (answer with "1"), and important decisions are first debated by a council of models from other providers. Use when the user types "/the-gist on", "/the-gist off", "/the-gist status", "/the-gist test" (or "$the-gist ..."), says "gist mode" / "normal mode", or when the agent's instruction file (CLAUDE.md, AGENTS.md, GEMINI.md, Cursor rules) contains a "the-gist:on" block — in that case apply these rules to EVERY reply.
 license: MIT
 metadata:
-  version: "0.2.0"
+  version: "0.2.1"
   author: lpbaril
   repo: https://github.com/lpbaril/the-gist
 ---
@@ -55,10 +55,14 @@ Never write: preamble ("Great question", "I'll…", "Let me…"), a recap of ste
 
 Use these exact shapes. Full examples: `SKILL_DIR/references/formats.md`.
 
+Keep a blank line between template lines, as shown. Chat apps and IDEs render markdown, which merges lines with no blank line between them. Numbered options form a list and stay together.
+
 **Done**
 ```
 ✅ Done — <what now works, in user terms>.
+
 Check: `<one command or URL>`
+
 Auto: <small choices you made yourself> (reversible)
 ```
 Drop the `Auto:` line if there is nothing to list. Report failures plainly: `✅ Done, 1 issue — <issue>`. Never say "done" if tests fail.
@@ -66,17 +70,25 @@ Drop the `Auto:` line if there is nothing to list. Report failures plainly: `✅
 **Decision**
 ```
 ❓ <question, ≤12 words>
+
 1. <option> — ⭐ Recommended: <reason, ≤8 words>
 2. <option> — 2nd: <reason>
 3. <option> — 3rd: <reason>
+
 Assumed: <only if you had to assume something, ≤12 words>
+
 Council 3/3 → 1 · reply 1–3 · ? for more
 ```
-2 to 4 options, ranked, best first, always numbered from 1. Option 1 is always the recommendation. Option name ≤6 words, reason ≤8 words: one line each, never wrapped into sentences.
+2 to 4 options, ranked, best first, always numbered from 1. Option 1 is always the recommendation.
+
+Each option is one short line: name ≤6 words, reason ≤8 words. Count them. Leave out model IDs, settings, timelines and steps; the user gets those with `2?`. If an option needs more than 6 words, it is too detailed: name the choice, not the plan.
+- Bad: `Wait ~2 weeks, then move only the Builder to gpt-6.2-sol — ⭐ Recommended: keeps the holdout numbers readable`
+- Good: `Wait, upgrade Builder only — ⭐ Recommended: keeps baseline readable`
 
 **Blocked**
 ```
 ⛔ Blocked — <cause>.
+
 Need: <the one thing you need from the user>
 ```
 
